@@ -18,14 +18,22 @@ function! s:GitShade(filename)
 
   let lines = split(data,'\n')
 
-  let time = -1
-  let nextLine = 0
+  let earliestTime = localtime()
+  let latestTime = 0
   let times = []
+  let time = -1
+  let nextLineIsContent = 0
   for line in lines
 
-    if nextLine
+    if nextLineIsContent
       call add(times, time)
-      let nextLine = 0
+      let nextLineIsContent = 0
+      if time > latestTime
+        let latestTime = time
+      endif
+      if time < earliestTime
+        let earliestTime = time
+      endif
     else
 
       let words = split(line,' ')
@@ -33,7 +41,7 @@ function! s:GitShade(filename)
       if words[0] == "committer-time"
         let time = words[1]
       elseif words[0] == "filename"
-        let nextLine = 1
+        let nextLineIsContent = 1
       endif
 
     endif
@@ -48,15 +56,17 @@ function! s:GitShade(filename)
 
   silent! call clearmatches()
 
-  let curTime = localtime()
+  " Lines older than 2 weeks are colored normally
   let maxAge = 14.0 * 24.0 * 60.0 * 60.0
+  " Only lines in the first commit are colored normally
+  "let maxAge = latestTime - earliestTime
 
   let lineNum = 0
   for timeStr in times
     let lineNum += 1
 
     let timeNum = str2nr(timeStr)
-    let timeSince = curTime - timeNum
+    let timeSince = latestTime - timeNum
     if timeSince < 0
       let timeSince = 0
     endif
