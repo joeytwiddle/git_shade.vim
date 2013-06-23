@@ -1,5 +1,5 @@
-git_shade
-=========
+git_shade.vim
+=============
 
 Colors lines in different intensities according to their age in git's history
 
