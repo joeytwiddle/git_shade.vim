@@ -1,7 +1,22 @@
+" git_shade.vim - Colors lines in different intensities according to their age in git's history
+" Run :GitShade to shade the file.  Switch buffer or :e the file to remove the shading.
+
+" === Options ===
+
+if !exists("g:GitShade_ColorGradient") || !exists("g:GitShade_ColorWhat")
+  let g:GitShade_ColorGradient = "black_to_blue"
+  let g:GitShade_ColorWhat = "bg"
+  "let g:GitShade_ColorGradient = "green_to_white"
+  "let g:GitShade_ColorWhat = "fg"
+endif
+
+" === Commands ===
 
 command! GitShade call s:GitShade(expand("%"))
 "command! GitHighlightRecentLines call s:GitShade(expand("%"))
 "command! GitGlowRecentLines call s:GitShade(expand("%"))
+
+" === Script ===
 
 function! s:GitShade(filename)
 
@@ -18,28 +33,29 @@ function! s:GitShade(filename)
 
   let lines = split(data,'\n')
 
+  let times = []
   let earliestTime = localtime()
   let latestTime = 0
-  let times = []
-  let time = -1
+
+  let timeNum = -1
   let nextLineIsContent = 0
   for line in lines
 
     if nextLineIsContent
-      call add(times, time)
+      call add(times, timeNum)
       let nextLineIsContent = 0
-      if time > latestTime
-        let latestTime = time
+      if timeNum > latestTime
+        let latestTime = timeNum
       endif
-      if time < earliestTime
-        let earliestTime = time
+      if timeNum < earliestTime
+        let earliestTime = timeNum
       endif
     else
 
       let words = split(line,' ')
 
       if words[0] == "committer-time"
-        let time = words[1]
+        let timeNum = str2nr(words[1])
       elseif words[0] == "filename"
         let nextLineIsContent = 1
       endif
@@ -48,47 +64,65 @@ function! s:GitShade(filename)
 
   endfor
 
-  "echo "Hopefully " . len(times) . " matches the number of lines in the buffer."
-
   if line("$") != len(times)
     echo "WARNING: buffer lines " . line("$") . " do not match git blame lines " . len(lines)
   endif
 
-  silent! call clearmatches()
+  " TODO: These options should be made configurable
+
+  " In active projects, we want colors to represent age relative to now
+  let mostRecentTime = localtime()
+  " In old projects, we probably want to show changes relative to the last change (even if it was years ago)
+  "let mostRecentTime = latestTime
 
   " Lines older than 2 weeks are colored normally
   let maxAge = 14.0 * 24.0 * 60.0 * 60.0
-  " Only lines in the first commit are colored normally
+  " Only lines from the very first commit are colored normally
   "let maxAge = latestTime - earliestTime
 
+  silent! call clearmatches()
+
   let lineNum = 0
-  for timeStr in times
+  for timeNum in times
+
     let lineNum += 1
 
-    let timeNum = str2nr(timeStr)
-    let timeSince = latestTime - timeNum
+    let timeSince = mostRecentTime - timeNum
     if timeSince < 0
       let timeSince = 0
     endif
     if timeSince > maxAge
       let timeSince = maxAge
     endif
-    "let lum = 255.0 / (1.0 + timeSince / 60.0 / 60.0 / 24.0 / 15.0)
-    let lum = 255.0 * ( 1.0 - timeSince / maxAge )
-    let lum = float2nr(lum)
-    let lumHex = printf('%02x', lum)
-    "let hlStr = "00" . lumHex . "00"
-    "let hlStr = lumHex . "ff" . lumHex
-    let hlStr = "0000" . lumHex
-    "echo "Hex for age " . timeStr . " is: " . hlStr
+
+    " Linear
+    let intensity = 255.0 * ( 1.0 - timeSince / maxAge )
+    " Exponential: intensity halves every 2 weeks
+    "let intensity = 255.0 / (1.0 + timeSince / 60.0 / 60.0 / 24.0 / 15.0)
+    let intensity = float2nr(intensity)
+    let lumHex = printf('%02x', intensity)
+
+    if g:GitShade_ColorGradient == "black_to_green"
+      let hlStr = "00" . lumHex . "00"
+    elseif g:GitShade_ColorGradient == "green_to_white"
+      let hlStr = lumHex . "ff" . lumHex
+    elseif g:GitShade_ColorGradient == "black_to_blue"
+      let hlStr = "0000" . lumHex
+    endif
+
+    "echo "Hex for age " . timeNum . " is: " . hlStr
 
     let hlName = "ColoredTime_" . hlStr
 
     if hlexists(hlName)
       exec "highlight clear " . hlName
     endif
-    "exec "highlight " . hlName . " guifg=#" . hlStr . " gui=none"
-    exec "highlight " . hlName . " guibg=#" . hlStr
+
+    if g:GitShade_ColorWhat == "fg"
+      exec "highlight " . hlName . " guifg=#" . hlStr . " gui=none"
+    else
+      exec "highlight " . hlName . " guibg=#" . hlStr
+    endif
 
     let pattern = "\\%" . lineNum . "l"
 
