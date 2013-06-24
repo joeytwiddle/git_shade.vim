@@ -1,5 +1,6 @@
 " git_shade.vim - Colors lines in different intensities according to their age in git's history
 " Run :GitShade to shade the file.  Switch buffer or :e the file to remove the shading.
+" Warning: The current version is pretty slow/inefficient on large files!
 
 " === Options ===
 
@@ -71,14 +72,19 @@ function! s:GitShade(filename)
   " TODO: These options should be made configurable
 
   " In active projects, we want colors to represent age relative to now
-  let mostRecentTime = localtime()
+  "let mostRecentTime = localtime()
   " In old projects, we probably want to show changes relative to the last change (even if it was years ago)
-  "let mostRecentTime = latestTime
+  let mostRecentTime = latestTime
 
   " Lines older than 2 weeks are colored normally
-  let maxAge = 14.0 * 24.0 * 60.0 * 60.0
+  "let maxAge = 14 * 24 * 60 * 60
   " Only lines from the very first commit are colored normally
   "let maxAge = latestTime - earliestTime
+  " Only shade lines in the second half of the file's history
+  let maxAge = (latestTime - earliestTime) / 2
+
+  " We need maxAge to be a float
+  let maxAge = maxAge * 1.0
 
   silent! call clearmatches()
 
@@ -93,8 +99,11 @@ function! s:GitShade(filename)
     endif
     if timeSince > maxAge
       let timeSince = maxAge
+      "continue
     endif
 
+    " Integer calculation did not work well (numbers got too large?)
+    "let intensity = max([min([255 - (255 * timeSince / maxAge), 255]), 0])
     " Linear
     let intensity = 255.0 * ( 1.0 - timeSince / maxAge )
     " Exponential: intensity halves every 2 weeks
@@ -102,12 +111,16 @@ function! s:GitShade(filename)
     let intensity = float2nr(intensity)
     let lumHex = printf('%02x', intensity)
 
+    " NOTE: In future we may want to interpolate between two provided colors.  If they are provided in hex, we can use str2nr(hexStr, 16) to obtain a decimal.
     if g:GitShade_ColorGradient == "black_to_green"
       let hlStr = "00" . lumHex . "00"
     elseif g:GitShade_ColorGradient == "green_to_white"
       let hlStr = lumHex . "ff" . lumHex
     elseif g:GitShade_ColorGradient == "black_to_blue"
       let hlStr = "0000" . lumHex
+    elseif g:GitShade_ColorGradient == "grey_to_black"
+      let unlumHex = printf('%02x', 128-intensity/2)
+      let hlStr = unlumHex . unlumHex . unlumHex
     endif
 
     "echo "Hex for age " . timeNum . " is: " . hlStr
@@ -117,6 +130,8 @@ function! s:GitShade(filename)
     if hlexists(hlName)
       exec "highlight clear " . hlName
     endif
+
+    "echo "timeSince=" . timeSince . " maxAge=" . maxAge . " intensity=" . intensity
 
     if g:GitShade_ColorWhat == "fg"
       exec "highlight " . hlName . " guifg=#" . hlStr . " gui=none"
@@ -143,7 +158,8 @@ function! s:GitShade(filename)
 
   " TODO: Creating all these pattern matches makes rendering very inefficient.
   " The time taken to render will probably grow linearly with the number of lines in the file (the number of matches we create).
-  " To reduce this, we could group together times which are the same, and create just one match for each unique timestamp.
+  " To reduce this, we could group together times which are the same, and create just one pattern for each unique timestamp, which would highlight multiple lines.
+  " As done here: http://stackoverflow.com/questions/13675019/vim-highlight-lines-using-line-number-on-external-file?rq=1
   " Alternatively, we could use the 'signs' column to indicate different ages, and highlight lines through that.
 
 endfunction
