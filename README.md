@@ -23,5 +23,5 @@ With `let g:GitShade_Linear = 0` the recent additions stand out clearly:
 
 With `let g:GitShade_Linear = 1` we can see the relative ages of all lines in the file:
 
-![Shading to show relative ages of all lines](http://neuralyte.org/~joey/git_shade/git_shade/git_shade_non_linear.png)
+![Shading to show relative ages of all lines](http://neuralyte.org/~joey/git_shade/git_shade/git_shade_linear.png)
 
