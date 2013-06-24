@@ -78,20 +78,26 @@ function! s:GitShade(filename)
 
   " TODO: These options should be made configurable
 
-  " In active projects, we want colors to represent age relative to now
-  "let mostRecentTime = localtime()
-  " In old projects, we probably want to show changes relative to the last change (even if it was years ago)
-  let mostRecentTime = latestTime
+  " In active projects, intensity can represent age relative to now
+  let mostRecentTime = localtime()
+  " But in old projects or old files, we may want to show changes relative to the last commit, even if it was made years ago
+  "let mostRecentTime = latestTime
 
   " Lines older than 2 weeks are colored normally
   "let maxAge = 14 * 24 * 60 * 60
   " Only lines from the very first commit are colored normally
-  "let maxAge = latestTime - earliestTime
+  let maxAge = mostRecentTime - earliestTime
   " Only shade lines in the second half of the file's history
-  let maxAge = (latestTime - earliestTime) / 2
+  "let maxAge = (mostRecentTime - earliestTime) / 2.0
+  " How fast should intensity fade as we move into the past?
+  " Just enough to give a faint shade to the first commit:
+  let halfLife = (mostRecentTime - earliestTime) / 16.0
+  " Or constant: intensity halves every two weeks
+  "let halfLife = 60*60*24*14
 
-  " We need maxAge to be a float
+  " We need these to be floats
   let maxAge = maxAge * 1.0
+  let halfLife = halfLife * 1.0
 
   silent! call clearmatches()
 
@@ -117,9 +123,9 @@ function! s:GitShade(filename)
     " Integer calculation did not work well (numbers got too large?)
     "let intensity = max([min([255 - (255 * timeSince / maxAge), 255]), 0])
     " Linear
-    let intensity = 255.0 * ( 1.0 - timeSince / maxAge )
-    " Exponential: intensity halves every 2 weeks
-    "let intensity = 255.0 / (1.0 + timeSince / 60.0 / 60.0 / 24.0 / 15.0)
+    "let intensity = 255.0 * ( 1.0 - timeSince / maxAge )
+    " Exponential: intensity halves every halfLife
+    let intensity = 255.0 / (1.0 + timeSince / halfLife)
     let intensity = float2nr(intensity)
     let lumHex = printf('%02x', intensity)
 
