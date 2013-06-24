@@ -1,6 +1,6 @@
 " git_shade.vim - Colors lines in different intensities according to their age in git's history
 " Run :GitShade to shade the file.  Switch buffer or :e the file to remove the shading.
-" Warning: The current version is pretty slow/inefficient on large files!
+" TODO: Should seek .git folder from the buffer file's path, in case our pwd is not within the project.
 
 " === Options ===
 
@@ -34,16 +34,23 @@ function! s:GitShade(filename)
 
   let lines = split(data,'\n')
 
-  let times = []
+  let timesDictionary = {}
   let earliestTime = localtime()
   let latestTime = 0
 
   let timeNum = -1
   let nextLineIsContent = 0
+  let lineNum = 0
   for line in lines
 
     if nextLineIsContent
-      call add(times, timeNum)
+      let lineNum += 1
+      "call add(times, timeNum)
+      if !exists("timesDictionary[timeNum]")
+        let timesDictionary[timeNum] = []
+      endif
+      let list = timesDictionary[timeNum]
+      call add(list, lineNum)
       let nextLineIsContent = 0
       if timeNum > latestTime
         let latestTime = timeNum
@@ -65,9 +72,9 @@ function! s:GitShade(filename)
 
   endfor
 
-  if line("$") != len(times)
-    echo "WARNING: buffer lines " . line("$") . " do not match git blame lines " . len(lines)
-  endif
+  "if line("$") != len(times)
+  "  echo "WARNING: buffer lines " . line("$") . " do not match git blame lines " . len(lines)
+  "endif
 
   " TODO: These options should be made configurable
 
@@ -88,10 +95,11 @@ function! s:GitShade(filename)
 
   silent! call clearmatches()
 
-  let lineNum = 0
-  for timeNum in times
+  "let lineNum = 0
+  "for timeNum in times
+  for [timeNum, linesThisCommit] in items(timesDictionary)
 
-    let lineNum += 1
+    "let lineNum += 1
 
     let timeSince = mostRecentTime - timeNum
     if timeSince < 0
@@ -139,7 +147,8 @@ function! s:GitShade(filename)
       exec "highlight " . hlName . " guibg=#" . hlStr
     endif
 
-    let pattern = "\\%" . lineNum . "l"
+    "let pattern = "\\%" . lineNum . "l"
+    let pattern = join( map(linesThisCommit,'"\\%" . v:val . "l"'), '\|' )
 
     call matchadd(hlName, pattern)
 
@@ -156,9 +165,9 @@ function! s:GitShade(filename)
     autocmd BufWinEnter * call clearmatches()
   augroup END
 
-  " TODO: Creating all these pattern matches makes rendering very inefficient.
+  " Creating all these pattern matches makes rendering very inefficient.
   " The time taken to render will probably grow linearly with the number of lines in the file (the number of matches we create).
-  " To reduce this, we could group together times which are the same, and create just one pattern for each unique timestamp, which would highlight multiple lines.
+  " DONE: To reduce this, we could group together times which are the same, and create just one pattern for each unique timestamp, which would highlight multiple lines.
   " As done here: http://stackoverflow.com/questions/13675019/vim-highlight-lines-using-line-number-on-external-file?rq=1
   " Alternatively, we could use the 'signs' column to indicate different ages, and highlight lines through that.
 
