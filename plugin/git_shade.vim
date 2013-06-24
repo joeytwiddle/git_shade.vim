@@ -43,10 +43,13 @@ function! s:GitShade(filename)
   let lines = split(data,'\n')
 
   let timesDictionary = {}
+  let b:gitBlameLineData = ["there_is_no_line_zero"]
   let earliestTime = localtime()
   let latestTime = 0
 
   let timeNum = -1
+  let author = ""
+  let summary = ""
   let nextLineIsContent = 0
   let lineNum = 0
   for line in lines
@@ -66,12 +69,18 @@ function! s:GitShade(filename)
       if timeNum < earliestTime
         let earliestTime = timeNum
       endif
+      let dateStr = strftime("%d/%m/%y %H:%M", timeNum)
+      call add( b:gitBlameLineData, dateStr." (".author.") ".summary )
     else
 
       let words = split(line,' ')
 
       if words[0] == "committer-time"
         let timeNum = str2nr(words[1])
+      elseif words[0] == "author"
+        let author = join(words[1:],' ')
+      elseif words[0] == "summary"
+        let summary = join(words[1:],' ')
       elseif words[0] == "filename"
         let nextLineIsContent = 1
       endif
@@ -185,6 +194,8 @@ function! s:GitShade(filename)
   augroup GitShade
     autocmd!
     autocmd BufWinEnter * call clearmatches()
+    autocmd CursorHold <buffer> call s:ShowGitBlameData()
+    " Note that because we define it only on this buffer, running :GitShade will remove ShowGitBlameData from other buffers.
   augroup END
 
   " Creating all these pattern matches makes rendering very inefficient.
@@ -194,3 +205,15 @@ function! s:GitShade(filename)
   " CONSIDER: Alternatively, we could use the 'signs' column to indicate different ages, and highlight lines through that.
 
 endfunction
+
+function! s:ShowGitBlameData()
+  if exists("b:gitBlameLineData")
+    let data = get(b:gitBlameLineData, line("."), "no_git_blame_data")
+    " Truncate string if it will not fit in command-line
+    if strdisplaywidth(data) > &ch * &columns
+      let data = strpart(data, 0, &ch * &columns)
+    endif
+    echo data
+  endif
+endfunction
+
