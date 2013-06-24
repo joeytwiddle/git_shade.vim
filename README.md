@@ -13,3 +13,7 @@ Some possible options (see the file for more):
     let g:GitShade_ColorGradient = "green_to_white"
     let g:GitShade_ColorWhat = "fg"
 
+For example, the bright blue background indicates the most recent addition to this source file:
+
+![Showing some the latest additions to a C++ file](http://neuralyte.org/~joey/git_shade/git_shade/screenshot-25665.png)
+
