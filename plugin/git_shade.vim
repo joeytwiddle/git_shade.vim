@@ -11,6 +11,12 @@ if !exists("g:GitShade_ColorGradient") || !exists("g:GitShade_ColorWhat")
   "let g:GitShade_ColorWhat = "fg"
 endif
 
+" Linear mode is good for comparing the ages of all the lines in the file.
+" Non-linear mode (0) is better at indicating the most recent lines; most older lines fade to black.
+if !exists("g:GitShade_Linear")
+  let g:GitShade_Linear = 0
+endif
+
 " === Commands ===
 
 command! GitShade call s:GitShade(expand("%"))
@@ -72,9 +78,9 @@ function! s:GitShade(filename)
 
   endfor
 
-  "if line("$") != len(times)
-  "  echo "WARNING: buffer lines " . line("$") . " do not match git blame lines " . len(lines)
-  "endif
+  if line("$") != lineNum
+    echo "WARNING: buffer linecount " . line("$") . " does not match git blame linecount " . lineNum
+  endif
 
   " TODO: These options should be made configurable
 
@@ -120,12 +126,13 @@ function! s:GitShade(filename)
       endif
     endif
 
-    " Integer calculation did not work well (numbers got too large?)
-    "let intensity = max([min([255 - (255 * timeSince / maxAge), 255]), 0])
-    " Linear
-    "let intensity = 255.0 * ( 1.0 - timeSince / maxAge )
-    " Exponential: intensity halves every halfLife
-    let intensity = 255.0 / (1.0 + timeSince / halfLife)
+    if g:GitShade_Linear
+      " Linear
+      let intensity = 255.0 * ( 1.0 - timeSince / maxAge )
+    else
+      " Exponential: intensity halves every halfLife
+      let intensity = 255.0 / (1.0 + timeSince / halfLife)
+    endif
     let intensity = float2nr(intensity)
     let lumHex = printf('%02x', intensity)
 
