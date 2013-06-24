@@ -15,7 +15,7 @@ Some possible options (see the plugin file for more):
     let g:GitShade_ColorGradient = "green_to_white"
     let g:GitShade_ColorWhat = "fg"
 
-In the screenshots below, the brighter blue background indicates a most recent addition.
+In the screenshots below, the brighter blue background indicates a more recent addition.
 
 With `let g:GitShade_Linear = 0` the recent additions stand out clearly:
 
