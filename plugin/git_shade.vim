@@ -107,7 +107,11 @@ function! s:GitShade(filename)
     endif
     if timeSince > maxAge
       let timeSince = maxAge
-      "continue
+      " Skip doing any highlighting on old/unshaded lines
+      " Only applies to some themes.
+      if g:GitShade_ColorWhat == "bg" && match(g:GitShade_ColorGradient, "^black")==0
+        continue
+      endif
     endif
 
     " Integer calculation did not work well (numbers got too large?)
@@ -133,7 +137,7 @@ function! s:GitShade(filename)
 
     "echo "Hex for age " . timeNum . " is: " . hlStr
 
-    let hlName = "ColoredTime_" . hlStr
+    let hlName = "GitShade_" . hlStr
 
     if hlexists(hlName)
       exec "highlight clear " . hlName
