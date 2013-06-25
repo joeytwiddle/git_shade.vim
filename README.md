@@ -7,7 +7,7 @@ Run `:GitShade` to shade the file.  Switch buffer or `:e` the file to remove the
 
 Naturally this only works in Vim's GUI mode.
 
-Caveat: This plugin is pretty raw, will set your background to black, and does offer much in the way of cleanup.  Please fork and show it some love!
+Caveat: This plugin is pretty raw, will set your background to black, and does not offer much in the way of cleanup.  Please fork and show it some love!
 
 Some possible options (see the plugin file for more):
 
