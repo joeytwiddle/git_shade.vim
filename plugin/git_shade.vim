@@ -2,6 +2,14 @@
 " Run :GitShade to shade the file, and again to turn it off.
 " git_shade assumes you have a black background.  If not, you are likely to have a bad time.
 
+
+
+" === Commands ===
+
+command! GitShade call s:GitShade(expand("%"))
+
+
+
 " === Options ===
 
 if !exists("g:GitShade_ColorGradient") || !exists("g:GitShade_ColorWhat")
@@ -11,17 +19,13 @@ if !exists("g:GitShade_ColorGradient") || !exists("g:GitShade_ColorWhat")
   "let g:GitShade_ColorWhat = "fg"
 endif
 
-" Linear mode (1) is good for comparing the ages of all the lines in the file.
-" Non-linear mode (0) is better at indicating the most recent lines; most older lines fade to black.
+" Mode 0 is good at indicating the most recent lines; older lines fade to black.
+" Mode 1 is good for comparing the ages of all the lines in the file.
 if !exists("g:GitShade_Linear")
   let g:GitShade_Linear = 0
 endif
 
-" === Commands ===
 
-command! GitShade call s:GitShade(expand("%"))
-"command! GitHighlightRecentLines call s:GitShade(expand("%"))
-"command! GitGlowRecentLines call s:GitShade(expand("%"))
 
 " === Script ===
 
@@ -44,7 +48,8 @@ function! s:GitShade(filename)
   "let workHere = shellescape("--work-tree=" . fnamemodify(a:filename,":p:h"))
   "let cmd = "git ".workHere." blame --line-porcelain -t " . shellescape(a:filename)
   " Works but a bit long and messy
-  let workingFolder = fnamemodify(a:filename, ":p:h")
+  "let workingFolder = fnamemodify(a:filename, ":p:h")   " Global, but relative should do...
+  let workingFolder = fnamemodify(a:filename, ":h")
   let relativeFilename = fnamemodify(a:filename, ":t")
   let cmd = "cd " . shellescape(workingFolder) . " && git blame --line-porcelain -t " . shellescape(relativeFilename)
 
@@ -209,7 +214,7 @@ function! s:GitShade(filename)
 
   endfor
 
-  if exists(":redir")
+  if exists(":redir") && !exists("w:oldNormalHighlight")
     let w:oldNormalHighlight = ''
     redir => w:oldNormalHighlight
       " silent does not print to screen, but still prints to redir :)
@@ -220,11 +225,21 @@ function! s:GitShade(filename)
 
   exec "highlight Normal guibg=black"
 
+  " We hide the ruler to prevent conflict with the echo in ShowGitBlameData
+  if !exists("w:oldRuler")
+    let w:oldRuler = &ruler
+  endif
+  let &ruler = 0
+  " CONSIDER: We may also want to unset |showcmd|.  See |press-enter|
+
   augroup GitShade
     autocmd!
     autocmd BufWinLeave * call s:GitShadeDisable()
     autocmd CursorHold <buffer> call s:ShowGitBlameData()
   augroup END
+
+  " BUG TODO: If I do :CMiniBufExplorer, the BufWinLeave fires *on MBE*, not on my shaded window.  This is not immediately a problem, but now the autocmds have been wiped, so any future buffer switches keep the shading in the window, yuck!
+  "           Perhaps only the CursorHold cmd should be created/wiped, whilst the BufWinLeave should remain for the whole life of he script.  (Make two autocmd groups, e.g. GitShadeStatic and GitShadeDynamic.)
 
   " Creating all these pattern matches makes rendering very inefficient.
   " The time taken to render will probably grow linearly with the number of lines in the file (the number of matches we create).
@@ -238,11 +253,12 @@ function! s:ShowGitBlameData()
   if exists("b:gitBlameLineData")
     let data = get(b:gitBlameLineData, line("."), "no_git_blame_data")
     " Truncate string if it will not fit in command-line
-    " For some reason it needs a large gap on the right, and for narrow windows even 16 is not enough!  Although strangely this problem disappears if I split the window.  :o
-    let maxWidth = &ch * &columns - 16
+    let maxWidth = &ch * &columns - 1
     if strdisplaywidth(data) > maxWidth
-      let data = strpart(data, 0, maxWidth)
+      let data = strpart(data, 0, maxWidth-1) . ">"
     endif
+    " Even after truncating, we can still get a press-enter message, if there
+    " is only 1 window, and we overlap with the ruler.  So we disabled ruler.
     echo data
   endif
 endfunction
@@ -257,6 +273,9 @@ function! s:GitShadeDisable()
     let rehighlightFixed = substitute(w:oldNormalHighlight,'\<xxx\>','','')
     let rehighlightFixed = substitute(rehighlightFixed,'\<font=.*','','')
     exec "highlight " . rehighlightFixed
+  endif
+  if exists("w:oldRuler")
+    let &ruler = w:oldRuler
   endif
 endfunction
 
