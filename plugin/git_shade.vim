@@ -2,8 +2,6 @@
 " Run :GitShade to shade the file, and again to turn it off.
 " git_shade assumes you have a black background.  If not, you are likely to have a bad time.
 
-" TODO : Should seek .git folder from the buffer file's path, in case our pwd is not within the project.
-
 " === Options ===
 
 if !exists("g:GitShade_ColorGradient") || !exists("g:GitShade_ColorWhat")
@@ -34,15 +32,20 @@ function! s:GitShade(filename)
     return
   endif
 
-  " TODO CONSIDER: Since matches are attached to the window, should we track
-  " w:git_shade_enabled instead of b: ?  It's too late for me to decide.  :P
   if exists("w:git_shade_enabled") && w:git_shade_enabled
     call s:GitShadeDisable()
     return
   endif
   let w:git_shade_enabled = 1
 
-  let cmd = "git blame --line-porcelain -t " . shellescape(a:filename)
+  " This fails if we are not inside the same repository as the buffer
+  "let cmd = "git blame --line-porcelain -t " . shellescape(a:filename)
+  " No idea why this isn't working.  It works fine when I copy-paste it!
+  "let workHere = shellescape("--work-tree=" . fnamemodify(a:filename,":p:h"))
+  "let cmd = "git ".workHere." blame --line-porcelain -t " . shellescape(a:filename)
+  " Works but a bit long and messy
+  let workingFolder = fnamemodify(a:filename, ":p:h")
+  let cmd = "cd " . shellescape(workingFolder) . " && git blame --line-porcelain -t " . shellescape(a:filename)
 
   echo "Doing: " . cmd
 
