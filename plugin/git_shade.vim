@@ -70,11 +70,11 @@ function! s:GitShade(filename)
   let timeNum = -1
   let author = ""
   let summary = ""
-  let nextLineIsContent = 0
   let lineNum = 0
   for line in lines
 
-    if nextLineIsContent
+    if line[0:0] == "\t"
+
       let lineNum += 1
       "call add(times, timeNum)
       if !exists("timesDictionary[timeNum]")
@@ -82,7 +82,6 @@ function! s:GitShade(filename)
       endif
       let list = timesDictionary[timeNum]
       call add(list, lineNum)
-      let nextLineIsContent = 0
       if timeNum > latestTime
         let latestTime = timeNum
       endif
@@ -91,18 +90,13 @@ function! s:GitShade(filename)
       endif
       let dateStr = strftime("%d/%m/%y %H:%M", timeNum)
       call add( b:gitBlameLineData, dateStr." (".author.") ".summary )
-    else
 
-      if line[0:14] == "committer-time "
-        let timeNum = s:afterSpace(line)
-      elseif line[0:6] == "author "
-        let author = s:afterSpace(line)
-      elseif line[0:7] == "summary "
-        let summary = s:afterSpace(line)
-      elseif line[0:8] == "filename "
-        let nextLineIsContent = 1
-      endif
-
+    elseif line[0:14] == "committer-time "
+      let timeNum = s:afterSpace(line)
+    elseif line[0:6] == "author "
+      let author = s:afterSpace(line)
+    elseif line[0:7] == "summary "
+      let summary = s:afterSpace(line)
     endif
 
   endfor
