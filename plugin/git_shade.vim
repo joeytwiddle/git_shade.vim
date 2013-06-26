@@ -1,5 +1,5 @@
 " git_shade.vim - Colors lines in different intensities according to their age in git's history
-" Run :GitShade to shade the file.  Switch buffer or :e the file to remove the shading.
+" Run :GitShade to shade the file, and again to turn it off.
 " git_shade assumes you have a black background.  If not, you are likely to have a bad time.
 
 " TODO: Should seek .git folder from the buffer file's path, in case our pwd is not within the project.
@@ -33,6 +33,14 @@ function! s:GitShade(filename)
     echo "Only works in GUI mode."
     return
   endif
+
+  " TODO CONSIDER: Since matches are attached to the window, should we track
+  " w:git_shade_enabled instead of b: ?  It's too late for me to decide.  :P
+  if exists("b:git_shade_enabled") && b:git_shade_enabled
+    call s:GitShadeDisable()
+    return
+  endif
+  let b:git_shade_enabled = 1
 
   let cmd = "git blame --line-porcelain -t " . shellescape(a:filename)
 
@@ -160,6 +168,9 @@ function! s:GitShade(filename)
     elseif g:GitShade_ColorGradient == "grey_to_black"
       let iHex = printf('%02x', 128-intensity/2)
       let hlStr = iHex . iHex . iHex
+    elseif g:GitShade_ColorGradient == "blue_to_black"
+      let iHex = printf('%02x', 255-intensity)
+      let hlStr = "0000" . iHex
     endif
 
     "echo "Hex for age " . timeNum . " is: " . hlStr
@@ -193,7 +204,7 @@ function! s:GitShade(filename)
 
   augroup GitShade
     autocmd!
-    autocmd BufWinEnter * call clearmatches()
+    autocmd BufWinLeave * call s:GitShadeDisable()
     autocmd CursorHold <buffer> call s:ShowGitBlameData()
     " Note that because we define it only on this buffer, running :GitShade will remove ShowGitBlameData from other buffers.
   augroup END
@@ -215,5 +226,13 @@ function! s:ShowGitBlameData()
     endif
     echo data
   endif
+endfunction
+
+function! s:GitShadeDisable()
+  call clearmatches()
+  let b:git_shade_enabled = 0
+  augroup GitShade
+    autocmd!
+  augroup END
 endfunction
 

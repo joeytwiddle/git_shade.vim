@@ -3,7 +3,7 @@ git_shade.vim
 
 Colors lines in different intensities according to their age in git's history
 
-Run `:GitShade` to shade the file.  Switch buffer or `:e` the file to remove the shading.
+Run `:GitShade` to shade the file, and again to turn it off.
 
 Naturally this only works in Vim's GUI mode.
 
