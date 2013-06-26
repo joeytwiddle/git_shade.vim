@@ -45,7 +45,8 @@ function! s:GitShade(filename)
   "let cmd = "git ".workHere." blame --line-porcelain -t " . shellescape(a:filename)
   " Works but a bit long and messy
   let workingFolder = fnamemodify(a:filename, ":p:h")
-  let cmd = "cd " . shellescape(workingFolder) . " && git blame --line-porcelain -t " . shellescape(a:filename)
+  let relativeFilename = fnamemodify(a:filename, ":t")
+  let cmd = "cd " . shellescape(workingFolder) . " && git blame --line-porcelain -t " . shellescape(relativeFilename)
 
   echo "Doing: " . cmd
 
@@ -165,6 +166,8 @@ function! s:GitShade(filename)
       let hlStr = iHex . "ff" . iHex
     elseif g:GitShade_ColorGradient == "black_to_blue"
       let hlStr = "0000" . iHex
+    elseif g:GitShade_ColorGradient == "black_to_red"
+      let hlStr = iHex . "0000"
     elseif g:GitShade_ColorGradient == "black_to_grey"
       let iHex = printf('%02x', intensity/2)
       let hlStr = iHex . iHex . iHex
@@ -174,6 +177,9 @@ function! s:GitShade(filename)
     elseif g:GitShade_ColorGradient == "blue_to_black"
       let iHex = printf('%02x', 255-intensity)
       let hlStr = "0000" . iHex
+    elseif g:GitShade_ColorGradient == "green_to_black"
+      let iHex = printf('%02x', 255-intensity)
+      let hlStr = "00" . iHex . "00"
     endif
 
     "echo "Hex for age " . timeNum . " is: " . hlStr
@@ -218,7 +224,6 @@ function! s:GitShade(filename)
     autocmd!
     autocmd BufWinLeave * call s:GitShadeDisable()
     autocmd CursorHold <buffer> call s:ShowGitBlameData()
-    " Note that because we define it only on this buffer, running :GitShade will remove ShowGitBlameData from other buffers.
   augroup END
 
   " Creating all these pattern matches makes rendering very inefficient.
