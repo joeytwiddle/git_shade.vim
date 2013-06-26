@@ -2,7 +2,7 @@
 " Run :GitShade to shade the file, and again to turn it off.
 " git_shade assumes you have a black background.  If not, you are likely to have a bad time.
 
-" TODO: Should seek .git folder from the buffer file's path, in case our pwd is not within the project.
+" TODO : Should seek .git folder from the buffer file's path, in case our pwd is not within the project.
 
 " === Options ===
 
@@ -36,11 +36,11 @@ function! s:GitShade(filename)
 
   " TODO CONSIDER: Since matches are attached to the window, should we track
   " w:git_shade_enabled instead of b: ?  It's too late for me to decide.  :P
-  if exists("b:git_shade_enabled") && b:git_shade_enabled
+  if exists("w:git_shade_enabled") && w:git_shade_enabled
     call s:GitShadeDisable()
     return
   endif
-  let b:git_shade_enabled = 1
+  let w:git_shade_enabled = 1
 
   let cmd = "git blame --line-porcelain -t " . shellescape(a:filename)
 
@@ -200,6 +200,15 @@ function! s:GitShade(filename)
 
   endfor
 
+  if exists(":redir")
+    let w:oldNormalHighlight = ''
+    redir => w:oldNormalHighlight
+      " silent does not print to screen, but still prints to redir :)
+      silent highlight Normal
+    redir END
+    let w:oldNormalHighlight = substitute(w:oldNormalHighlight, '\n', '', '')
+  endif
+
   exec "highlight Normal guibg=black"
 
   augroup GitShade
@@ -230,9 +239,14 @@ endfunction
 
 function! s:GitShadeDisable()
   call clearmatches()
-  let b:git_shade_enabled = 0
+  let w:git_shade_enabled = 0
   augroup GitShade
     autocmd!
   augroup END
+  if exists("w:oldNormalHighlight")
+    let rehighlightFixed = substitute(w:oldNormalHighlight,'\<xxx\>','','')
+    let rehighlightFixed = substitute(rehighlightFixed,'\<font=.*','','')
+    exec "highlight " . rehighlightFixed
+  endif
 endfunction
 
