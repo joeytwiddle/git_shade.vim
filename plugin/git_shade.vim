@@ -215,7 +215,7 @@ function! s:GitShade(filename)
       " silent does not print to screen, but still prints to redir :)
       silent highlight Normal
     redir END
-    let w:oldNormalHighlight = substitute(w:oldNormalHighlight, '\n', '', '')
+    let w:oldNormalHighlight = substitute(w:oldNormalHighlight, '\n', '', 'g')
   endif
 
   exec "highlight Normal guibg=black"
@@ -238,8 +238,10 @@ function! s:ShowGitBlameData()
   if exists("b:gitBlameLineData")
     let data = get(b:gitBlameLineData, line("."), "no_git_blame_data")
     " Truncate string if it will not fit in command-line
-    if strdisplaywidth(data) > &ch * &columns
-      let data = strpart(data, 0, &ch * &columns)
+    " For some reason it needs a large gap on the right, and for narrow windows even 16 is not enough!  Although strangely this problem disappears if I split the window.  :o
+    let maxWidth = &ch * &columns - 16
+    if strdisplaywidth(data) > maxWidth
+      let data = strpart(data, 0, maxWidth)
     endif
     echo data
   endif
