@@ -7,8 +7,6 @@ Run `:GitShade` to shade the file, and again to turn it off.
 
 Naturally this only works in Vim's GUI mode.
 
-Caveat: This plugin is pretty raw, will set your background to black, and does not offer much in the way of cleanup.  Please fork and show it some love!
-
 Some possible options (see the plugin file for more):
 
     let g:GitShade_ColorGradient = "black_to_blue"
