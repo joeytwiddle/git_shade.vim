@@ -91,12 +91,12 @@ function! s:GitShade(filename)
       let dateStr = strftime("%d/%m/%y %H:%M", timeNum)
       call add( b:gitBlameLineData, dateStr." (".author.") ".summary )
 
-    elseif line[0:14] == "committer-time "
-      let timeNum = s:afterSpace(line)
     elseif line[0:6] == "author "
       let author = s:afterSpace(line)
     elseif line[0:7] == "summary "
       let summary = s:afterSpace(line)
+    elseif line[0:14] == "committer-time "
+      let timeNum = s:afterSpace(line)
     endif
 
   endfor
