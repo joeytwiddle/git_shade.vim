@@ -2,6 +2,9 @@
 " Run :GitShade to shade the file, and again to turn it off.
 " git_shade assumes you have a black background.  If not, you are likely to have a bad time.
 
+" TODO: Support for users with &background == "light"
+" TODO: Offer custom shade gradient, through two hex vars or two highlight settings.
+
 
 
 " === Commands ===
@@ -19,7 +22,7 @@ if !exists("g:GitShade_ColorGradient") || !exists("g:GitShade_ColorWhat")
   "let g:GitShade_ColorWhat = "fg"
 endif
 
-" Mode 0 is good at indicating the most recent lines; older lines fade to black.
+" Mode 0 is good at indicating recent lines; old lines fade to black.
 " Mode 1 is good for comparing the ages of all the lines in the file.
 if !exists("g:GitShade_Linear")
   let g:GitShade_Linear = 0
@@ -225,7 +228,7 @@ function! s:GitShade(filename)
 
   exec "highlight Normal guibg=black"
 
-  " We hide the ruler to prevent conflict with the echo in ShowGitBlameData
+  " We hide the ruler to prevent ShowGitBlameData from causing press-enter messages.
   if !exists("w:oldRuler")
     let w:oldRuler = &ruler
   endif
@@ -238,8 +241,8 @@ function! s:GitShade(filename)
     autocmd CursorHold <buffer> call s:ShowGitBlameData()
   augroup END
 
-  " BUG TODO: If I do :CMiniBufExplorer, the BufWinLeave fires *on MBE*, not on my shaded window.  This is not immediately a problem, but now the autocmds have been wiped, so any future buffer switches keep the shading in the window, yuck!
-  "           Perhaps only the CursorHold cmd should be created/wiped, whilst the BufWinLeave should remain for the whole life of he script.  (Make two autocmd groups, e.g. GitShadeStatic and GitShadeDynamic.)
+  " BUG TODO: If I do :CMiniBufExplorer, the BufWinLeave fires *on MBE*, not on my shaded window.  This is not immediately a problem, but it wipes the autocmds, so any future buffer switches keep the shading in the window, yuck!
+  "           Perhaps only the CursorHold autocmd should be created+destroyed, whilst the BufWinLeave should remain for the whole life of he script.  (Make two autocmd groups, e.g. GitShadeStatic and GitShadeDynamic.)
 
   " Creating all these pattern matches makes rendering very inefficient.
   " The time taken to render will probably grow linearly with the number of lines in the file (the number of matches we create).
