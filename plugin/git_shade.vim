@@ -93,15 +93,13 @@ function! s:GitShade(filename)
       call add( b:gitBlameLineData, dateStr." (".author.") ".summary )
     else
 
-      let words = split(line,' ')
-
-      if words[0] == "committer-time"
-        let timeNum = str2nr(words[1])
-      elseif words[0] == "author"
-        let author = join(words[1:],' ')
-      elseif words[0] == "summary"
-        let summary = join(words[1:],' ')
-      elseif words[0] == "filename"
+      if line[0:14] == "committer-time "
+        let timeNum = s:afterSpace(line)
+      elseif line[0:6] == "author "
+        let author = s:afterSpace(line)
+      elseif line[0:7] == "summary "
+        let summary = s:afterSpace(line)
+      elseif line[0:8] == "filename "
         let nextLineIsContent = 1
       endif
 
@@ -280,5 +278,9 @@ function! s:GitShadeDisable()
   if exists("w:oldRuler")
     let &ruler = w:oldRuler
   endif
+endfunction
+
+function! s:afterSpace(str)
+  return substitute(a:str, '^[^ ]* ', '', '')
 endfunction
 
