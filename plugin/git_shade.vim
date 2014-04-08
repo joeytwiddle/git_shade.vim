@@ -34,10 +34,10 @@ endif
 
 function! s:GitShade(filename)
 
-  if !has("gui_running")
-    echo "Only works in GUI mode."
-    return
-  endif
+  "if !has("gui_running")
+    "echo "GitShade only works in GUI mode."
+    "return
+  "endif
 
   if exists("w:git_shade_enabled") && w:git_shade_enabled
     call s:GitShadeDisable()
@@ -248,7 +248,8 @@ function! s:ShowGitBlameData()
   if exists("b:gitBlameLineData")
     let data = get(b:gitBlameLineData, line("."), "no_git_blame_data")
     " Truncate string if it will not fit in command-line
-    let maxWidth = &ch * &columns - 1
+    " <bling^> 12 is magical and is the threshold for when it doesn't wrap text anymore
+    let maxWidth = &ch * &columns - 12
     if strdisplaywidth(data) > maxWidth
       let data = strpart(data, 0, maxWidth-1) . ">"
     endif
