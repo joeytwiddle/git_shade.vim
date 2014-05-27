@@ -15,6 +15,9 @@ Some possible options (see the plugin file for more):
     let g:GitShade_ColorGradient = "green_to_white"
     let g:GitShade_ColorWhat = "fg"
 
+    " Use grays instead of blues in 256-color terminal:
+    let g:GitShade_Colors_For_CTerm_256 = [ 0, 232, 233, 234, 235, 236, 237, 238, 239 ]
+
 In the screenshots below, the brighter blue background indicates a more recent addition.
 
 With `let g:GitShade_Linear = 0` the recent additions stand out clearly:
@@ -24,4 +27,9 @@ With `let g:GitShade_Linear = 0` the recent additions stand out clearly:
 With `let g:GitShade_Linear = 1` we can see the relative ages of all lines in the file:
 
 ![Shading to show relative ages of all lines](http://neuralyte.org/~joey/git_shade/git_shade/git_shade_linear.png)
+
+Changelog:
+
+- May 2014: Support (with limited colors) for 8, 16 and 256-color terminals.  (Vim's `t_Co` option should be set appropriately.)
+- June 2013: Committer name, date and message for current line is now displayed in command line area.
 
