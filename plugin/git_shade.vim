@@ -2,6 +2,8 @@
 " Run :GitShade to shade the file, and again to turn it off.
 " git_shade assumes you have a black background.  If not, you are likely to have a bad time.
 
+" See also: https://github.com/FriedSock/smeargle (requires Ruby)
+
 " TODO: Support for users with &background == "light"
 " TODO: Offer custom shade gradient, through two hex vars or two highlight settings.
 
