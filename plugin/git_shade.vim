@@ -28,16 +28,21 @@ if !exists("g:GitShade_Linear")
   let g:GitShade_Linear = 0
 endif
 
+if !exists("g:GitShade_Colors_For_CTerm_8")
+  let g:GitShade_Colors_For_CTerm_8   = [ 0, 0, 4 ]
+endif
+if !exists("g:GitShade_Colors_For_CTerm_16")
+  let g:GitShade_Colors_For_CTerm_16  = [ 0, 0, 4, 12 ]
+endif
+if !exists("g:GitShade_Colors_For_CTerm_256")
+  let g:GitShade_Colors_For_CTerm_256 = [ 0, 0, 17, 18, 19, 20, 27, 33 ]
+endif
+
 
 
 " === Script ===
 
 function! s:GitShade(filename)
-
-  "if !has("gui_running")
-    "echo "GitShade only works in GUI mode."
-    "return
-  "endif
 
   if exists("w:git_shade_enabled") && w:git_shade_enabled
     call s:GitShadeDisable()
@@ -159,6 +164,8 @@ function! s:GitShade(filename)
 
     let hlStr = s:GetHexColorFor(intensity)
 
+    let ctermStr = s:GetCTermColorFor(intensity)
+
     let hlName = "GitShade_" . hlStr
 
     if hlexists(hlName)
@@ -168,9 +175,9 @@ function! s:GitShade(filename)
     "echo "timeSince=" . timeSince . " maxAge=" . maxAge . " intensity=" . intensity
 
     if g:GitShade_ColorWhat == "fg"
-      exec "highlight " . hlName . " guifg=#" . hlStr . " gui=none"
+      exec "highlight " . hlName . " guifg=#" . hlStr . " gui=none ctermfg=" . ctermStr
     else
-      exec "highlight " . hlName . " guibg=#" . hlStr
+      exec "highlight " . hlName . " guibg=#" . hlStr . " ctermbg=" . ctermStr
     endif
 
     "let pattern = "\\%" . lineNum . "l"
@@ -219,6 +226,23 @@ function! s:GitShade(filename)
 
 endfunction
 
+function! s:GetCTermColorFor(intensity)
+  if &t_Co >= 256
+    let colorArray = g:GitShade_Colors_For_CTerm_256
+  elseif &t_Co >= 16
+    let colorArray = g:GitShade_Colors_For_CTerm_16
+  else
+    let colorArray = g:GitShade_Colors_For_CTerm_8
+  endif
+  let indexFloat = a:intensity * len(colorArray)
+  let index = float2nr( indexFloat )
+  if index >= len(colorArray)
+    let index = len(colorArray)
+  endif
+  let color = colorArray[index]
+  return color
+endfunction
+
 function! s:GetHexColorFor(intensity)
   let intensity = float2nr(255.0 * a:intensity)
   let iHex = printf('%02x', intensity)
@@ -247,7 +271,6 @@ function! s:GetHexColorFor(intensity)
   endif
 
   "echo "Hex for intensity " . intensity . " is: " . hlStr
-
   return hlStr
 endfunction
 
