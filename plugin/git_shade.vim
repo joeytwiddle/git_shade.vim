@@ -238,8 +238,8 @@ function! s:GetCTermColorFor(intensity)
   endif
   let indexFloat = a:intensity * len(colorArray)
   let index = float2nr( indexFloat )
-  if index >= len(colorArray)
-    let index = len(colorArray)
+  if index > len(colorArray)-1
+    let index = len(colorArray)-1
   endif
   let color = colorArray[index]
   return color
