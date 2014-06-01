@@ -185,6 +185,12 @@ function! s:GitShade(filename)
     "let pattern = "\\%" . lineNum . "l"
     let pattern = join( map(linesThisCommit,'"\\%" . v:val . "l"'), '\|' )
 
+    " Vim throws an error if the pattern length is too large (it was somewhere between 50,000 and 60,000).
+    if len(pattern) > 50000 && match(pattern, '|') >= 0
+      echo "Pattern for timestamp ".timeNum." is too large: ".len(pattern)." (It marks ".len(linesThisCommit)." lines) Trimming it."
+      let pattern = substitute( strpart(pattern,0,50000), '|[^|]*$', '', '')
+    endif
+
     call matchadd(hlName, pattern)
 
     "if lineNum > 20
