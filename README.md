@@ -33,3 +33,8 @@ Changelog:
 - May 2014: Support (with limited colors) for 8, 16 and 256-color terminals.  (Vim's `t_Co` option should be set appropriately.)
 - June 2013: Committer name, date and message for current line is now displayed in command line area.
 
+Related:
+
+- [smeargle](https://github.com/FriedSock/smeargle) is a similar script which also offers a mode to highlight different committers.
+- [fugitive.vim](https://github.com/tpope/vim-fugitive) provides a host of useful git tools, including `:Gblame` which presents info in the sidebar.
+- [Gitv!](https://github.com/gregsexton/gitv) lets you select a range of lines and then walk through all their previous commits.
