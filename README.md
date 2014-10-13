@@ -5,7 +5,7 @@ Colors lines in different intensities according to their age in git's history
 
 Run `:GitShade` to shade the file, and again to turn it off.
 
-Naturally this only works in Vim's GUI mode.
+This works best in Vim's gui mode, but there is now support for 8, 16 and 256 terminal colour mode too.
 
 Some possible options (see the plugin file for more):
 
