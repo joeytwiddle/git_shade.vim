@@ -59,8 +59,9 @@ function! s:GitShade(filename)
   "let cmd = "git ".workHere." blame --line-porcelain -t " . shellescape(a:filename)
   " Works but a bit long and messy
   "let workingFolder = fnamemodify(a:filename, ":p:h")   " Global, but relative should do...
-  let workingFolder = fnamemodify(a:filename, ":h")
-  let relativeFilename = fnamemodify(a:filename, ":t")
+  let targetFile = resolve(a:filename)
+  let workingFolder = fnamemodify(targetFile, ":h")
+  let relativeFilename = fnamemodify(targetFile, ":t")
   let cmd = "cd " . shellescape(workingFolder) . " && git blame --line-porcelain -t " . shellescape(relativeFilename)
 
   echo "Doing: " . cmd
