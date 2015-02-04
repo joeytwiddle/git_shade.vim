@@ -136,7 +136,9 @@ function! s:GitShade(filename)
   let maxAge = maxAge * 1.0
   let halfLife = halfLife * 1.0
 
-  silent! call clearmatches()
+  "silent! call clearmatches()
+
+  let b:GitShade_matchids = []
 
   "let lineNum = 0
   "for timeNum in times
@@ -192,7 +194,8 @@ function! s:GitShade(filename)
       let pattern = substitute( strpart(pattern,0,50000), '|[^|]*$', '', '')
     endif
 
-    call matchadd(hlName, pattern)
+    let match = matchadd(hlName, pattern, -1)
+    let b:GitShade_matchids += [match]
 
     "if lineNum > 20
     "  break
@@ -299,7 +302,11 @@ function! s:ShowGitBlameData()
 endfunction
 
 function! s:GitShadeDisable()
-  call clearmatches()
+  "call clearmatches()
+  if exists('b:GitShade_matchids')
+    call filter(b:GitShade_matchids, 'matchdelete(v:val)')
+    unlet b:GitShade_matchids
+  endif
   let w:git_shade_enabled = 0
   augroup GitShade
     autocmd!
