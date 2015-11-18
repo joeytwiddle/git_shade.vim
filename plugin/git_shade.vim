@@ -136,6 +136,11 @@ function! s:GitShade(filename)
   let maxAge = maxAge * 1.0
   let halfLife = halfLife * 1.0
 
+  if maxAge == 0
+    echo "Could not find any history.  Is this file managed by git?"
+    return
+  endif
+
   silent! call clearmatches()
 
   "let lineNum = 0
