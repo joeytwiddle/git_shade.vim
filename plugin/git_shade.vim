@@ -62,7 +62,7 @@ function! s:GitShade(filename)
   let targetFile = resolve(a:filename)
   let workingFolder = fnamemodify(targetFile, ":h")
   let relativeFilename = fnamemodify(targetFile, ":t")
-  let cmd = "cd " . shellescape(workingFolder) . " && git blame --line-porcelain -t " . shellescape(relativeFilename)
+  let cmd = "cd " . shellescape(workingFolder) . " && git blame --line-porcelain -t -w " . shellescape(relativeFilename)
 
   echo "Doing: " . cmd
 
