@@ -20,13 +20,13 @@ Some possible options (see the plugin file for more):
 
 In the screenshots below, the brighter blue background indicates a more recent addition.
 
-With `let g:GitShade_Linear = 0` the recent additions stand out clearly:
+With `let g:GitShade_Linear = 0` (default) the recent additions stand out clearly:
 
-![Showing the latest additions to a C++ file](http://neuralyte.org/~joey/git_shade/git_shade/git_shade_non_linear_resized.png)
+<img width="800" src="https://joeytwiddle.github.io/git_shade.vim/images/readme/git-shade-linear-0.png">
 
 With `let g:GitShade_Linear = 1` we can see the relative ages of all lines in the file:
 
-![Shading to show relative ages of all lines](http://neuralyte.org/~joey/git_shade/git_shade/git_shade_linear_resized.png)
+<img width="800" src="https://joeytwiddle.github.io/git_shade.vim/images/readme/git-shade-linear-1.png">
 
 Changelog:
 
