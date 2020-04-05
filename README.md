@@ -11,7 +11,7 @@ This is useful to see which lines were added at the same time, and which lines w
 
 In the following screenshots a _brighter_ blue background indicates a _recently_ added or edited line.
 
-With `let g:GitShade_Linear = 0` (default) the most recent additions stand out clearly:
+By default (`let g:GitShade_Linear = 0`) we use an exponential drop-off, so the _most recent_ additions stand out clearly:
 
 <img width="800" src="https://joeytwiddle.github.io/git_shade.vim/images/readme/git-shade-linear-0.png">
 
